@@ -24,7 +24,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -75,8 +76,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int i=0;
-int j=0;
+
 /* USER CODE END 0 */
 
 /**
@@ -86,7 +86,7 @@ int j=0;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-#define MAX_ARR 625
+#define MAX_ARR 626
 #define alpha_50 313
 	char	 	cmdBuffer[CMD_BUFFER_SIZE];
 		int 		idx_cmd;
@@ -94,6 +94,8 @@ int main(void)
 		int		 	argc = 0;
 		char*		token;
 		int 		newCmdReady = 0;
+		int i=0;
+		int j=0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,6 +104,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -120,7 +123,7 @@ int main(void)
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
- /* HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, SET);
+  /*HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, SET);
   HAL_Delay(100);
   HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, RESET);*/
 
@@ -140,7 +143,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  /*TIM1->CCR1=alpha_50+i;
+	  TIM1->CCR2=MAX_ARR-(alpha_50+i);
+	  HAL_Delay(100);
+	  i=i+1;*/
 
 	  // uartRxReceived is set to 1 when a new character is received on uart 1
 	  	  	  if(uartRxReceived){
@@ -189,27 +195,29 @@ int main(void)
 	  	  		  }
 	  	  		  else if(strcmp(argv[0],"help")==0){
 
-	  	  			  				  sprintf(uartTxBuffer,"pinout\r\nstart\r\nstop\r\nspeed=\r\n");
+	  	  			  				  sprintf(uartTxBuffer,"pinout\r\nstart\r\nstop\r\n");
 	  	  			  				  HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 	  	  			  			  }
 	  	  		else if(strcmp(argv[0],"start")==0){
-	  	  					sprintf(uartTxBuffer,"ready\r\n");
-	  	  				 HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+
 	  	  					HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, SET);
 	  	  			  	    HAL_Delay(100);
 	  	  			  	    HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, RESET);
+	  	  			  	sprintf(uartTxBuffer,"ready\r\n");
+	  	  			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 	  	  			  			  			  }
 	  	  	else if(strcmp(argv[0],"speed=")==0){
-	  	  	i=atoi(argv[1]);
-	  	  	if (i<0){i=0;}
-	  	    if (i>100){i=100;}
-	  	  sprintf(uartTxBuffer,"i : %d\r\n",atoi(argv[1]));
-	  	HAL_UART_Transmit(&huart2, uartTxBuffer, 32, HAL_MAX_DELAY);
-	  			j=(MAX_ARR*i)/100;
-	  	  		  	  			  			  TIM1->CCR1=j;
-	  	  		  	  			  			  TIM1->CCR2=(MAX_ARR-j);
+	  	  		  	  	i=atoi(argv[1]);
+	  	  		  	  	if (i<0){i=0;}
+	  	  		  	    if (i>100){i=100;}
 
-	  	  		  	  			  			  }
+	  	  		  			j=(MAX_ARR*i)/100;
+	  	  		  	  		  	  			  	TIM1->CCR1=j;
+	  	  		  	  		  	  			  	TIM1->CCR2=(MAX_ARR-j);
+	  	  		  	  	sprintf(uartTxBuffer,"i : %d\r\n",atoi(argv[1]));
+	  	  		  	  	HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+
+	  	  		  	  		  	  			  			  }
 
 	  	  		  else{
 	  	  			  HAL_UART_Transmit(&huart2, cmdNotFound, sizeof(cmdNotFound), HAL_MAX_DELAY);
