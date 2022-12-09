@@ -69,6 +69,7 @@ uint32_t uartRxReceived;
 uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
 uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
 int adcDmaFlag;
+int affichage;
 uint32_t adcBuffer[2];
 /* USER CODE END PV */
 
@@ -235,10 +236,8 @@ int main(void)
 			newCmdReady = 0;
 		}
 
-		if(adcDmaFlag){
+		if(adcDmaFlag &&  affichage){
 			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",((float)adcBuffer[0])*3.3/4096);
-			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
-			sprintf(uartTxBuffer,"ADC Value2: %1.2f\r\n",((float)adcBuffer[1])*3.3/4096);
 			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			adcDmaFlag=0;
 
@@ -307,6 +306,14 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
 	adcDmaFlag=1;
 }
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == BUTTON_Pin) {
+	    affichage=(affichage+1)%2;
+	  }
+}
+
 /* USER CODE END 4 */
 
 /**
