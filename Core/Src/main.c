@@ -70,7 +70,8 @@ uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
 uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
 int adcDmaFlag;
 int affichage;
-uint32_t adcBuffer[2];
+uint8_t courant;
+uint16_t adcBuffer[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -237,7 +238,7 @@ int main(void)
 		}
 
 		if(adcDmaFlag &&  affichage){
-			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",((float)adcBuffer[0])*3.3/4096);
+			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12));
 			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			adcDmaFlag=0;
 
