@@ -47,6 +47,7 @@
 #define ASCII_CR 0x0D
 // DEL = delete
 #define ASCII_DEL 0x7F
+#define ENCOD_MOITIE 4294967295/2
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -70,8 +71,11 @@ uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
 uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
 int adcDmaFlag;
 int affichage;
-uint8_t courant;
+uint32_t position;
 uint16_t adcBuffer[2];
+extern int it_tim1;
+extern int it2_tim1;
+float retour_courant;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,16 +130,18 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 	HAL_ADC_Start_DMA(&hadc1, adcBuffer, 2);
 
 
-	HAL_TIM_Base_Start(&htim1);
+	HAL_TIM_Base_Start_IT(&htim1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+	HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
 
 	memset(argv,NULL,MAX_ARGS*sizeof(char*));
@@ -237,13 +243,22 @@ int main(void)
 			newCmdReady = 0;
 		}
 
-		if(adcDmaFlag &&  affichage){
-			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12));
+		if(adcDmaFlag &&  affichage==1 && it2_tim1){
+			//retour_courant=(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12);
+			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",retour_courant);
 			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			adcDmaFlag=0;
-
+			it2_tim1=0;
 		}
 
+		if(it_tim1 &&  affichage==2){
+		position=TIM2->CNT;
+		position= position-ENCOD_MOITIE;
+		TIM2->CNT=ENCOD_MOITIE;
+		sprintf(uartTxBuffer,"vitesse : %.1f tr/min\r\n",((float)position*0.03));
+		HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+		it_tim1=0;
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -306,12 +321,13 @@ void HAL_UART_RxCpltCallback (UART_HandleTypeDef * huart){
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
 	adcDmaFlag=1;
+	retour_courant=(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == BUTTON_Pin) {
-	    affichage=(affichage+1)%2;
+	    affichage=(affichage+1)%3;
 	  }
 }
 
