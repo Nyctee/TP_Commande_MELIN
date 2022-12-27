@@ -73,8 +73,8 @@ int adcDmaFlag;
 int affichage;
 uint32_t position;
 uint16_t adcBuffer[2];
-extern int it_tim1;
-extern int it2_tim1;
+extern int it_Tim1;
+extern int it2_Tim1;
 float retour_courant;
 /* USER CODE END PV */
 
@@ -196,25 +196,27 @@ int main(void)
 		}
 
 		if(newCmdReady){
-			if(strcmp(argv[0],"set")==0){
-				if(strcmp(argv[1],"PA5")==0){
-					HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, atoi(argv[2]));
-					sprintf(uartTxBuffer,"Switch on/off led : %d\r\n",atoi(argv[2]));
-					HAL_UART_Transmit(&huart2, uartTxBuffer, 32, HAL_MAX_DELAY);
-				}
-				else{
-					HAL_UART_Transmit(&huart2, cmdNotFound, sizeof(cmdNotFound), HAL_MAX_DELAY);
-				}
-			}
-			else if(strcmp(argv[0],"get")==0)
-			{
-				HAL_UART_Transmit(&huart2, cmdNotFound, sizeof(cmdNotFound), HAL_MAX_DELAY);
-			}
-			else if(strcmp(argv[0],"help")==0){
+			if(strcmp(argv[0],"help")==0){
 
 				sprintf(uartTxBuffer,"pinout\r\nstart\r\nstop\r\n");
 				HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			}
+			if(strcmp(argv[0],"pinout")==0){
+
+							sprintf(uartTxBuffer,"PC3=ISO_RESET\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+							sprintf(uartTxBuffer,"PA8/PA11=TIM1_CH1/TIM1_CH1N(pwm)\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+							sprintf(uartTxBuffer,"PA9/PA12=TIM1_CH2/TIM1_CH2N(pwm)\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+							sprintf(uartTxBuffer,"PA2/PA3=USART2_TX/USART2_RX\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+							sprintf(uartTxBuffer,"PA0=ADC1_IN1\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+							sprintf(uartTxBuffer,"PA15/PA1=TIM2_CH1/TIM2_CH2(encodeur)\r\n");
+							HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
+						}
+
 			else if(strcmp(argv[0],"start")==0){
 
 				HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin, SET);
@@ -243,21 +245,21 @@ int main(void)
 			newCmdReady = 0;
 		}
 
-		if(adcDmaFlag &&  affichage==1 && it2_tim1){
+		if(adcDmaFlag &&  affichage==1 && it2_Tim1){
 			//retour_courant=(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12);
 			sprintf(uartTxBuffer,"ADC Value1: %1.2f\r\n",retour_courant);
 			HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			adcDmaFlag=0;
-			it2_tim1=0;
+			it2_Tim1=0;
 		}
 
-		if(it_tim1 &&  affichage==2){
+		if(it_Tim1 &&  affichage==2){
 		position=TIM2->CNT;
 		position= position-ENCOD_MOITIE;
 		TIM2->CNT=ENCOD_MOITIE;
 		sprintf(uartTxBuffer,"vitesse : %.1f tr/min\r\n",((float)position*0.03));
 		HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
-		it_tim1=0;
+		it_Tim1=0;
 		}
     /* USER CODE END WHILE */
 

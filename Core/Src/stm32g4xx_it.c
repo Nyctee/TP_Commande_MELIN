@@ -42,8 +42,8 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 int i=0;
-int it_tim1;
-int it2_tim1;
+int it_Tim1;
+int it2_Tim1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -228,8 +228,8 @@ void TIM1_UP_TIM16_IRQHandler(void)
   /* USER CODE BEGIN TIM1_UP_TIM16_IRQn 1 */
  i++;
  if(i==16000){
-	it_tim1=1;
-	it2_tim1=1;
+	it_Tim1=1;
+	it2_Tim1=1;
 	i=0;
  }
 
