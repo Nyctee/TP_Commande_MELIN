@@ -1,9 +1,9 @@
-/*
- * pi.c
- *
- *  Created on: Dec 16, 2022
- *      Author: Julien
- */
+/**
+  ******************************************************************************
+  * @file    pi.c
+  * @brief   Ce fichier sert à implémenter le correcteur PI mais il n'est pas terminé.
+  ******************************************************************************
+  */
 #include "pi.h"
 
 

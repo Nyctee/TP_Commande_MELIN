@@ -28,6 +28,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "string.h"
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,7 +105,7 @@ int main(void)
 	int		 	argc = 0;
 	char*		token;
 	int 		newCmdReady = 0;
-	int i=0;
+	int speed=0;
 	int j=0;
   /* USER CODE END 1 */
 
@@ -226,11 +227,11 @@ int main(void)
 				HAL_UART_Transmit(&huart2, uartTxBuffer, strlen(uartTxBuffer), HAL_MAX_DELAY);
 			}
 			else if(strcmp(argv[0],"speed=")==0){
-				i=atoi(argv[1]);
-				if (i<0){i=0;}
-				if (i>100){i=100;}
+				speed=atoi(argv[1]);
+				if (speed<0){speed=0;}
+				if (speed>100){speed=100;}
 
-				j=(MAX_ARR*i)/100;
+				j=(MAX_ARR*speed)/100;
 				TIM1->CCR1=j;
 				TIM1->CCR2=(MAX_ARR-j);
 				sprintf(uartTxBuffer,"i : %d\r\n",atoi(argv[1]));
@@ -319,13 +320,22 @@ void HAL_UART_RxCpltCallback (UART_HandleTypeDef * huart){
 	uartRxReceived = 1;
 	HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
 }
+/**
+  * @brief  Cette fonction permet d'effectuer une mesure de courant en utilisant la fonction
+  * Callback de l'ADC
+  * @retval none
+  */
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
 	adcDmaFlag=1;
 	retour_courant=(((((float)adcBuffer[0])*(3.3/4095))-2.25)*12);
 }
-
+/**
+  * @brief  Cette fonction permet de gérer l'affichage des variables
+  * grâce à un appui sur le bouton bleu.
+  * @retval none
+  */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == BUTTON_Pin) {
